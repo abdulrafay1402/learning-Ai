@@ -28,6 +28,14 @@ if "profile" not in st.session_state:
     st.session_state.profile = {}   # stores user info
 if "history" not in st.session_state:
     st.session_state.history = []   # stores all generated paths
+if "theme_preferences" not in st.session_state:
+    st.session_state.theme_preferences = {
+        "mode": "Light",
+        "primary_color": "#FF6B6B",
+        "secondary_color": "#4ECDC4",
+        "background_color": "#FFFFFF",
+        "text_color": "#2C3E50"
+    }
 
 # Set page configuration
 st.set_page_config(
@@ -43,11 +51,271 @@ page = st.sidebar.selectbox(
     ["Home", "Profile Setup", "Get Recommendations", "History", "Settings", "About"]
 )
 st.sidebar.markdown("---")
-st.sidebar.write("**Theme:**")
-theme = st.sidebar.selectbox("Choose Theme:", ["Light", "Dark", "Auto"])
+
+# Theme Configuration - Collapsible
+with st.sidebar.expander("🎨 Theme Settings", expanded=False):
+    # Theme mode selection
+    theme_mode = st.selectbox(
+        "Theme Mode:",
+        ["Light", "Dark", "Auto"],
+        index=["Light", "Dark", "Auto"].index(st.session_state.theme_preferences["mode"]),
+        help="Choose your preferred theme mode"
+    )
+
+    # Update session state
+    st.session_state.theme_preferences["mode"] = theme_mode
+
+    # Preset themes
+    st.markdown("**🎨 Quick Themes:**")
+    preset_col = st.columns(2)
+    with preset_col[0]:
+        if st.button("Ocean", help="Blue ocean theme", key="ocean_btn"):
+            st.session_state.theme_preferences.update({
+                "primary_color": "#0066CC",
+                "secondary_color": "#00CCFF",
+                "background_color": "#F0F8FF",
+                "text_color": "#003366"
+            })
+            st.rerun()
+        if st.button("Forest", help="Green forest theme", key="forest_btn"):
+            st.session_state.theme_preferences.update({
+                "primary_color": "#228B22",
+                "secondary_color": "#90EE90",
+                "background_color": "#F0FFF0",
+                "text_color": "#006400"
+            })
+            st.rerun()
+
+    with preset_col[1]:
+        if st.button("Sunset", help="Orange sunset theme", key="sunset_btn"):
+            st.session_state.theme_preferences.update({
+                "primary_color": "#FF6B35",
+                "secondary_color": "#FFB347",
+                "background_color": "#FFF8DC",
+                "text_color": "#8B4513"
+            })
+            st.rerun()
+        if st.button("Purple", help="Purple theme", key="purple_btn"):
+            st.session_state.theme_preferences.update({
+                "primary_color": "#8A2BE2",
+                "secondary_color": "#DDA0DD",
+                "background_color": "#F8F0FF",
+                "text_color": "#4B0082"
+            })
+            st.rerun()
+
+    # Custom colors section
+    with st.expander("🎨 Custom Colors", expanded=False):
+        primary_color = st.color_picker(
+            "Primary Color", 
+            st.session_state.theme_preferences["primary_color"]
+        )
+        secondary_color = st.color_picker(
+            "Secondary Color", 
+            st.session_state.theme_preferences["secondary_color"]
+        )
+        background_color = st.color_picker(
+            "Background Color", 
+            st.session_state.theme_preferences["background_color"]
+        )
+        text_color = st.color_picker(
+            "Text Color", 
+            st.session_state.theme_preferences["text_color"]
+        )
+
+        # Update session state with new colors
+        st.session_state.theme_preferences.update({
+            "primary_color": primary_color,
+            "secondary_color": secondary_color,
+            "background_color": background_color,
+            "text_color": text_color
+        })
+
+        # Reset button
+        if st.button("🔄 Reset to Default", help="Reset all theme settings to default", key="reset_btn"):
+            st.session_state.theme_preferences = {
+                "mode": "Light",
+                "primary_color": "#FF6B6B",
+                "secondary_color": "#4ECDC4",
+                "background_color": "#FFFFFF",
+                "text_color": "#2C3E50"
+            }
+            st.rerun()
+
+# Apply theme
+if theme_mode == "Dark":
+    st.markdown("""
+    <style>
+    .stApp {
+        background-color: #1E1E1E;
+        color: #FFFFFF;
+    }
+    .stButton > button {
+        background-color: """ + primary_color + """;
+        color: white;
+        border-radius: 10px;
+        border: none;
+        padding: 10px 20px;
+        font-weight: bold;
+    }
+    .stSelectbox > div > div {
+        background-color: #2D2D2D;
+        color: #FFFFFF;
+    }
+    .stTextInput > div > div > input {
+        background-color: #2D2D2D;
+        color: #FFFFFF;
+        border: 1px solid #444;
+    }
+    .stTextArea > div > div > textarea {
+        background-color: #2D2D2D;
+        color: #FFFFFF;
+        border: 1px solid #444;
+    }
+    .stSlider > div > div > div > div {
+        background-color: """ + secondary_color + """;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+elif theme_mode == "Light":
+    st.markdown("""
+    <style>
+    .stApp {
+        background-color: """ + background_color + """;
+        color: """ + text_color + """;
+    }
+    .stButton > button {
+        background-color: """ + primary_color + """;
+        color: white;
+        border-radius: 10px;
+        border: none;
+        padding: 10px 20px;
+        font-weight: bold;
+    }
+    .stSelectbox > div > div {
+        background-color: #FFFFFF;
+        color: """ + text_color + """;
+    }
+    .stTextInput > div > div > input {
+        background-color: #FFFFFF;
+        color: """ + text_color + """;
+        border: 1px solid #ddd;
+    }
+    .stTextArea > div > div > textarea {
+        background-color: #FFFFFF;
+        color: """ + text_color + """;
+        border: 1px solid #ddd;
+    }
+    .stSlider > div > div > div > div {
+        background-color: """ + secondary_color + """;
+    }
+    .stProgress > div > div > div {
+        background-color: """ + primary_color + """;
+    }
+    .stSuccess {
+        background-color: #D4EDDA;
+        color: #155724;
+        border: 1px solid #C3E6CB;
+        border-radius: 5px;
+        padding: 10px;
+    }
+    .stWarning {
+        background-color: #FFF3CD;
+        color: #856404;
+        border: 1px solid #FFEAA7;
+        border-radius: 5px;
+        padding: 10px;
+    }
+    .stError {
+        background-color: #F8D7DA;
+        color: #721C24;
+        border: 1px solid #F5C6CB;
+        border-radius: 5px;
+        padding: 10px;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+else:  # Auto mode - follows system preference
+    st.markdown("""
+    <style>
+    @media (prefers-color-scheme: dark) {
+        .stApp {
+            background-color: #1E1E1E;
+            color: #FFFFFF;
+        }
+        .stButton > button {
+            background-color: """ + primary_color + """;
+            color: white;
+            border-radius: 10px;
+            border: none;
+            padding: 10px 20px;
+            font-weight: bold;
+        }
+        .stSelectbox > div > div {
+            background-color: #2D2D2D;
+            color: #FFFFFF;
+        }
+        .stTextInput > div > div > input {
+            background-color: #2D2D2D;
+            color: #FFFFFF;
+            border: 1px solid #444;
+        }
+        .stTextArea > div > div > textarea {
+            background-color: #2D2D2D;
+            color: #FFFFFF;
+            border: 1px solid #444;
+        }
+        .stSlider > div > div > div > div {
+            background-color: """ + secondary_color + """;
+        }
+    }
+    @media (prefers-color-scheme: light) {
+        .stApp {
+            background-color: """ + background_color + """;
+            color: """ + text_color + """;
+        }
+        .stButton > button {
+            background-color: """ + primary_color + """;
+            color: white;
+            border-radius: 10px;
+            border: none;
+            padding: 10px 20px;
+            font-weight: bold;
+        }
+        .stSelectbox > div > div {
+            background-color: #FFFFFF;
+            color: """ + text_color + """;
+        }
+        .stTextInput > div > div > input {
+            background-color: #FFFFFF;
+            color: """ + text_color + """;
+            border: 1px solid #ddd;
+        }
+        .stTextArea > div > div > textarea {
+            background-color: #FFFFFF;
+            color: """ + text_color + """;
+            border: 1px solid #ddd;
+        }
+        .stSlider > div > div > div > div {
+            background-color: """ + secondary_color + """;
+        }
+        .stProgress > div > div > div {
+            background-color: """ + primary_color + """;
+        }
+    }
+    </style>
+    """, unsafe_allow_html=True)
 
 st.sidebar.markdown("---")
 st.sidebar.info("Made with ❤️ using Streamlit")
+
+# Footer in sidebar
+st.sidebar.markdown("---")
+st.sidebar.markdown("""
+<div style='text-align:center; padding:10px; color:gray; font-size:14px;'>
+Developed by <strong>Abdul Rafay</strong>
+</div>
+""", unsafe_allow_html=True)
 
 # Page Content Logic
 if page == "Home":
@@ -327,7 +595,7 @@ elif page == "About":
 st.markdown("""
     <hr style='margin-top:40px;margin-bottom:10px;'>
     <div style='text-align:center; color:gray; font-size:16px;'>
-        Created by Abdul Rafay | <a href='mailto:abdulrafayhere07@gmail.com'>Email:- abdulrafay</a> | <a href='https://github.com/abdulrafay1402' target='_blank'>GitHub</a><br>
+        Developed by Abdul Rafay | <a href='mailto:abdulrafayhere07@gmail.com'>Email:- abdulrafay</a> | <a href='https://github.com/abdulrafay1402' target='_blank'>GitHub</a><br>
         Software Engineering student at FAST-NUCES, Karachi, Pakistan<br>
         &copy; 2024-2025 Abdul Rafay. All rights reserved.
     </div>
