@@ -102,7 +102,7 @@ elif page == "Get Recommendations":
                 """
 
                 try:
-                    model = genai.GenerativeModel("gemini-pro")
+                    model = genai.GenerativeModel("gemini-2.0-flash")
                     response = model.generate_content(prompt)
 
                     roadmap = response.text.split("\n")  # split steps
