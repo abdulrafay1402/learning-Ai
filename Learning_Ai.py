@@ -67,23 +67,60 @@ if page == "Home":
 
 elif page == "Profile Setup":
     st.title("📝 Profile Setup")
-    st.write("Tell us about yourself so we can create the best path for you.")
+    st.write("Tell us about yourself so we can create the best learning path for you.")
 
+    # Personal Information
+    st.subheader("👤 Personal Information")
     col1, col2 = st.columns(2)
     with col1:
-        name = st.text_input("Name")
-        age = st.number_input("Age", 15, 80)
-        gender = st.selectbox("Gender", ["Male", "Female", "Other"])
-        education = st.selectbox("Education", ["High School", "Undergraduate", "Post Graduate"])
+        name = st.text_input("Full Name")
+        age = st.number_input("Age", 15, 80, 25)
+        gender = st.selectbox("Gender", ["Male", "Female", "Other", "Prefer not to say"])
         
     with col2:
-        skills = st.text_area("Current Skills (comma separated)")
-        level = st.selectbox("Level", ["Beginner", "Intermediate", "Advanced"])
-        goal = st.text_input("Career Goal (e.g., Web Developer, Data Scientist, AI Engineer)")
-        hours_per_day = st.slider("Hours available per day:", 1, 8, 2)
-        days_per_week = st.slider("Days available per week:", 1, 7, 5)
-        time = hours_per_day * days_per_week
-        st.info(f"📊 Total hours per week: {time} hours")
+        education = st.selectbox("Education Level", [
+            "High School", "Some College", "Associate's Degree", 
+            "Bachelor's Degree", "Master's Degree", "PhD", "Other"
+        ])
+        experience = st.selectbox("Work Experience", [
+            "No Experience", "1-2 years", "3-5 years", 
+            "6-10 years", "10+ years"
+        ])
+
+    # Learning Goals
+    st.subheader("🎯 Learning Goals")
+    goal = st.text_input("What career/job do you want to pursue?", 
+                        placeholder="e.g., Full Stack Developer, Data Scientist, AI Engineer")
+    
+    # Current Skills Assessment
+    st.subheader("💡 Current Skills")
+    skills = st.text_area("What skills do you already have? (comma separated)", 
+                         placeholder="e.g., Python, HTML, JavaScript, Excel")
+    level = st.selectbox("How would you rate your current skill level?", 
+                        ["Complete Beginner", "Some Experience", "Intermediate", "Advanced"])
+
+    # Time Availability
+    st.subheader("⏰ Time Availability")
+    st.write("Let's calculate your total available learning time:")
+    
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        hours_per_day = st.slider("Hours per day:", 0.5, 8.0, 2.0, 0.5)
+    with col2:
+        days_per_week = st.slider("Days per week:", 1, 7, 5)
+    with col3:
+        weeks_available = st.slider("Weeks available:", 1, 52, 12)
+    
+    # Calculate total time
+    total_hours = hours_per_day * days_per_week * weeks_available
+    total_months = weeks_available / 4.33  # Average weeks per month
+    
+    st.info(f"""
+    📊 **Your Learning Time Summary:**
+    - **Daily:** {hours_per_day} hours
+    - **Weekly:** {hours_per_day * days_per_week} hours  
+    - **Total Available:** {total_hours:.1f} hours ({total_months:.1f} months)
+    """)
 
     if st.button("Save Profile"):
         st.session_state.profile = {
@@ -91,10 +128,15 @@ elif page == "Profile Setup":
             "age": age,
             "gender": gender,
             "education": education,
+            "experience": experience,
             "skills": skills,
             "level": level,
             "goal": goal,
-            "time": time
+            "hours_per_day": hours_per_day,
+            "days_per_week": days_per_week,
+            "weeks_available": weeks_available,
+            "total_hours": total_hours,
+            "total_months": total_months
         }
         st.success("Profile Saved Successfully ✅")
 
@@ -110,27 +152,40 @@ elif page == "Get Recommendations":
         if st.button("🚀 Generate Learning Path"):
                 profile = st.session_state.profile
                 
-                # Create a concise prompt for learning path generation
+                # Create a comprehensive prompt for learning path generation
                 prompt = f"""
-                Create exactly 5-6 learning topics for becoming a {profile['goal']}.
+                Create a detailed learning path for becoming a {profile['goal']}.
                 
-                User: {profile['age']} years old, {profile['level']} level
-                Skills: {profile['skills']}
-                Time: {profile['time']} hours per week (MAXIMUM)
+                USER PROFILE:
+                - Age: {profile['age']} years old
+                - Education: {profile['education']}
+                - Experience: {profile['experience']}
+                - Current Skills: {profile['skills']}
+                - Skill Level: {profile['level']}
+                - Total Available Time: {profile['total_hours']:.1f} hours ({profile['total_months']:.1f} months)
+                - Daily: {profile['hours_per_day']} hours, Weekly: {profile['days_per_week']} days
+                
+                REQUIREMENTS:
+                - Create exactly 5-6 learning topics
+                - Each topic must include a specific course link (Udemy, Coursera, freeCodeCamp, etc.)
+                - Distribute the {profile['total_hours']:.1f} hours across all topics
+                - Respect the {profile['total_months']:.1f} month timeline
+                - Start from {profile['level']} level
                 
                 RESPONSE FORMAT (exactly like this):
-                • Topic Name (X weeks)
-                • Topic Name (X weeks)
-                • Topic Name (X weeks)
-                • Topic Name (X weeks)
-                • Topic Name (X weeks)
+                • Topic Name (X weeks) - [Course Link]
+                • Topic Name (X weeks) - [Course Link]
+                • Topic Name (X weeks) - [Course Link]
+                • Topic Name (X weeks) - [Course Link]
+                • Topic Name (X weeks) - [Course Link]
                 
                 Rules:
                 - Use bullet points (•) only
                 - Include time estimate in weeks
-                - Total time should not exceed 6 months
+                - Include actual course URLs from popular platforms
+                - Total weeks should not exceed {profile['total_months']:.0f} months
                 - No explanations or conversations
-                - Just topic names and time estimates
+                - Just topic names, time estimates, and course links
                 """
 
                 # Create containers for better organization
@@ -193,7 +248,18 @@ elif page == "Get Recommendations":
                                 if line.startswith(('1.', '2.', '3.', '4.', '5.', '6.', '7.', '8.', '9.')):
                                     st.markdown(f"**{line}**")
                                 elif line.startswith(('•', '-', '*', '→')):
-                                    st.markdown(f"  {line}")
+                                    # Check if line contains a URL
+                                    if 'http' in line:
+                                        # Split the line into topic and link
+                                        parts = line.split(' - ')
+                                        if len(parts) >= 2:
+                                            topic = parts[0].replace('•', '').strip()
+                                            link = parts[1].strip()
+                                            st.markdown(f"  **{topic}** - [{link}]({link})")
+                                        else:
+                                            st.markdown(f"  {line}")
+                                    else:
+                                        st.markdown(f"  {line}")
                                 else:
                                     st.markdown(line)
                             
