@@ -79,7 +79,7 @@ elif page == "Profile Setup":
     with col2:
         skills = st.text_area("Current Skills (comma separated)")
         level = st.selectbox("Level", ["Beginner", "Intermediate", "Advanced"])
-        goal = st.selectbox("Career Goal", ["Web Developer", "Data Scientist", "AI Engineer", "Mobile Developer", "Other"])
+        goal = st.text_input("Career Goal (e.g., Web Developer, Data Scientist, AI Engineer)")
         time = st.slider("Hours available per week:", 1, 40, 5)
 
     if st.button("Save Profile"):
@@ -104,32 +104,18 @@ elif page == "Get Recommendations":
     else:
         st.write(f"Hello **{st.session_state.profile['name']}**, ready for your learning path?")
 
-        # Add a test button to verify API connection
-        col1, col2 = st.columns(2)
-        with col1:
-            if st.button("🧪 Test API Connection"):
-                try:
-                    model = genai.GenerativeModel("gemini-2.0-flash")
-                    response = model.generate_content("Say 'Hello, API is working!'")
-                    if response.text:
-                        st.success("✅ API Connection Successful!")
-                        st.info(f"Response: {response.text}")
-                    else:
-                        st.error("❌ No response from API")
-                except Exception as e:
-                    st.error(f"❌ API Connection Failed: {str(e)}")
-
-        with col2:
-            if st.button("🚀 Generate Learning Path"):
+        if st.button("🚀 Generate Learning Path"):
                 profile = st.session_state.profile
                 
                 # Create a concise prompt for learning path generation
                 prompt = f"""
-                Create a simple 5-6 bullet point learning path for {profile['goal']}.
+                Create a simple 5-6 bullet point learning path for becoming a {profile['goal']}.
                 
-                User: {profile['age']} years old, {profile['level']} level
-                Skills: {profile['skills']}
-                Time: {profile['time']} hours per week
+                User Profile:
+                - Age: {profile['age']} years old
+                - Current Level: {profile['level']}
+                - Current Skills: {profile['skills']}
+                - Available Time: {profile['time']} hours per week
                 
                 Format: Just 5-6 bullet points with topic name and time estimate.
                 Example:
