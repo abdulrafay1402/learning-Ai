@@ -90,6 +90,52 @@ elif page == "Get Recommendations":
         if st.button("🚀 Generate Learning Path"):
             profile = st.session_state.profile
             prompt = f"""
+            say hello to the user
+            """
+
+            output_placeholder = st.empty()  # Shows live streaming
+            final_output = st.empty()        # Will hold final roadmap (formatted)
+            streamed_text = ""
+
+            try:
+                model = genai.GenerativeModel("gemini-2.0-flash")
+
+                # STREAMING live updates
+                for chunk in model.generate_content(prompt, stream=True):
+                    if chunk.text:
+                        streamed_text += chunk.text
+                        output_placeholder.markdown(f"### Generating...\n{streamed_text}")
+
+                # After streaming is complete:
+                output_placeholder.empty()  # Clear the "Generating..." text
+
+                # Split and format
+                roadmap = [line.strip() for line in streamed_text.split("\n") if line.strip()]
+
+                # Save to history
+                st.session_state.history.append({
+                    "goal": profile["goal"],
+                    "steps": roadmap
+                })
+
+                # Show final result in clean bullet points
+                final_output.markdown("### ✅ Your Roadmap:")
+                for step in roadmap:
+                    st.write(f"- {step}")
+
+            except Exception as e:
+                st.error(f"⚠️ Error generating recommendations: {e}")
+
+    st.title("🤖 AI-Powered Recommendations")
+
+    if not st.session_state.profile:
+        st.warning("⚠️ Please set up your profile first!")
+    else:
+        st.write(f"Hello **{st.session_state.profile['name']}**, ready for your learning path?")
+
+        if st.button("🚀 Generate Learning Path"):
+            profile = st.session_state.profile
+            prompt = f"""
            say hello to the user
             """
 
