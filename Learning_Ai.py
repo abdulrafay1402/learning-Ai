@@ -89,81 +89,106 @@ elif page == "Get Recommendations":
 
         if st.button("🚀 Generate Learning Path"):
             profile = st.session_state.profile
+            
+            # Create a comprehensive prompt for learning path generation
             prompt = f"""
-            say hello to the user
+            Create a detailed learning path for a {profile['age']}-year-old {profile['gender']} with {profile['education']} education.
+            
+            Current Skills: {profile['skills']}
+            Current Level: {profile['level']}
+            Career Goal: {profile['goal']}
+            Available Time: {profile['time']} hours per week
+            
+            Please provide a structured learning roadmap with:
+            1. Foundation skills to learn first
+            2. Intermediate concepts and tools
+            3. Advanced topics and projects
+            4. Recommended resources (courses, books, platforms)
+            5. Timeline estimates for each phase
+            
+            Format the response as a clear, numbered list with bullet points for sub-items.
+            Make it practical and achievable for someone with {profile['time']} hours per week.
             """
 
-            output_placeholder = st.empty()  # Shows live streaming
-            final_output = st.empty()        # Will hold final roadmap (formatted)
-            streamed_text = ""
-
-            try:
-                model = genai.GenerativeModel("gemini-2.0-flash")
-
-                # STREAMING live updates
-                for chunk in model.generate_content(prompt, stream=True):
-                    if chunk.text:
-                        streamed_text += chunk.text
-                        output_placeholder.markdown(f"### Generating...\n{streamed_text}")
-
-                # After streaming is complete:
-                output_placeholder.empty()  # Clear the "Generating..." text
-
-                # Split and format
-                roadmap = [line.strip() for line in streamed_text.split("\n") if line.strip()]
-
-                # Save to history
-                st.session_state.history.append({
-                    "goal": profile["goal"],
-                    "steps": roadmap
-                })
-
-                # Show final result in clean bullet points
-                final_output.markdown("### ✅ Your Roadmap:")
-                for step in roadmap:
-                    st.write(f"- {step}")
-
-            except Exception as e:
-                st.error(f"⚠️ Error generating recommendations: {e}")
-
-    st.title("🤖 AI-Powered Recommendations")
-
-    if not st.session_state.profile:
-        st.warning("⚠️ Please set up your profile first!")
-    else:
-        st.write(f"Hello **{st.session_state.profile['name']}**, ready for your learning path?")
-
-        if st.button("🚀 Generate Learning Path"):
-            profile = st.session_state.profile
-            prompt = f"""
-           say hello to the user
-            """
-
-            output_placeholder = st.empty()
-            streamed_text = ""
-
-            try:
-                model = genai.GenerativeModel("gemini-2.0-flash")
-
-                # STREAMING (no spinner, flush updates immediately)
-                for chunk in model.generate_content(prompt, stream=True):
-                    if chunk.text:
-                        streamed_text += chunk.text
-                        # update live (flush=True not required in Streamlit)
-                        output_placeholder.markdown(f"### Your Roadmap:\n{streamed_text}")
-
-                # Final split and save
-                roadmap = [line.strip() for line in streamed_text.split("\n") if line.strip()]
-
-                st.session_state.history.append({
-                    "goal": profile["goal"],
-                    "steps": roadmap
-                })
-
-                st.success("✅ Learning Path Completed!")
-
-            except Exception as e:
-                st.error(f"⚠️ Error generating recommendations: {e}")
+            # Create containers for better organization
+            with st.container():
+                st.markdown("### 🎯 Generating Your Personalized Learning Path...")
+                
+                # Progress indicator
+                progress_bar = st.progress(0)
+                status_text = st.empty()
+                
+                try:
+                    model = genai.GenerativeModel("gemini-2.0-flash")
+                    
+                    # Initialize streaming
+                    streamed_text = ""
+                    output_container = st.container()
+                    
+                    with output_container:
+                        output_placeholder = st.empty()
+                        
+                        # Stream the response
+                        response = model.generate_content(prompt, stream=True)
+                        
+                        for i, chunk in enumerate(response):
+                            if chunk.text:
+                                streamed_text += chunk.text
+                                # Update progress
+                                progress = min((i + 1) / 50, 1.0)  # Estimate progress
+                                progress_bar.progress(progress)
+                                status_text.text(f"Generating... {int(progress * 100)}%")
+                                
+                                # Update the output
+                                output_placeholder.markdown(f"**Live Generation:**\n{streamed_text}")
+                        
+                        # Complete progress
+                        progress_bar.progress(1.0)
+                        status_text.text("✅ Generation Complete!")
+                        
+                        # Clear the "Live Generation" text
+                        output_placeholder.empty()
+                        
+                        # Process and format the final result
+                        roadmap_lines = [line.strip() for line in streamed_text.split("\n") if line.strip()]
+                        
+                        # Save to history
+                        st.session_state.history.append({
+                            "goal": profile["goal"],
+                            "steps": roadmap_lines
+                        })
+                        
+                        # Display final formatted result
+                        st.markdown("### 🎯 Your Personalized Learning Path")
+                        st.markdown("---")
+                        
+                        for line in roadmap_lines:
+                            if line.startswith(('1.', '2.', '3.', '4.', '5.', '6.', '7.', '8.', '9.')):
+                                st.markdown(f"**{line}**")
+                            elif line.startswith(('•', '-', '*', '→')):
+                                st.markdown(f"  {line}")
+                            else:
+                                st.markdown(line)
+                        
+                        st.success("✅ Learning Path Generated Successfully!")
+                        
+                        # Add download option
+                        if st.button("📥 Download Learning Path"):
+                            # Create downloadable text
+                            download_text = f"Learning Path for {profile['goal']}\n"
+                            download_text += "=" * 50 + "\n\n"
+                            download_text += streamed_text
+                            
+                            st.download_button(
+                                label="📄 Download as Text File",
+                                data=download_text,
+                                file_name=f"learning_path_{profile['goal'].replace(' ', '_')}.txt",
+                                mime="text/plain"
+                            )
+                
+                except Exception as e:
+                    st.error(f"⚠️ Error generating recommendations: {str(e)}")
+                    st.info("Please check your API key and internet connection.")
 
 elif page == "History":
     st.title("📜 Your Past Learning Paths")
