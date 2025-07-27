@@ -18,7 +18,6 @@ if not api_key:
 # Configure the API
 try:
     genai.configure(api_key=api_key)
-    st.success("✅ API Key loaded successfully!")
 except Exception as e:
     st.error(f"❌ Error configuring API: {str(e)}")
     st.stop()
