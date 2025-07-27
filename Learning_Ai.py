@@ -1,4 +1,10 @@
 import streamlit as st
+from dotenv import load_dotenv
+import os, google.generativeai as genai
+
+load_dotenv()
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+
 
 # Initialize session state
 if "profile" not in st.session_state:
@@ -80,26 +86,41 @@ elif page == "Get Recommendations":
         st.warning("⚠️ Please set up your profile first!")
     else:
         st.write(f"Hello **{st.session_state.profile['name']}**, ready for your learning path?")
-        
-        if st.button("🚀 Generate Learning Path"):
-            # Later this will be AI generated. For now, dummy path:
-            roadmap = [
-                "Learn Python Basics",
-                "Master Pandas & Numpy",
-                "Build 3 Mini Projects",
-                "Learn SQL & Databases",
-                "Apply for internships"
-            ]
-            # Save this roadmap into history
-            st.session_state.history.append({
-                "goal": st.session_state.profile["goal"],
-                "steps": roadmap
-            })
 
-            st.success("Learning path generated successfully! ✅")
-            st.markdown("### Your Roadmap:")
-            for i, step in enumerate(roadmap, 1):
-                st.write(f"{i}. {step}")
+        if st.button("🚀 Generate Learning Path"):
+            with st.spinner("Generating your personalized roadmap..."):
+                # Build prompt from user profile
+                profile = st.session_state.profile
+                prompt = f"""
+                Create a detailed step-by-step learning roadmap for a {profile['level']} level learner
+                who wants to become a {profile['goal']}. 
+                Current skills: {profile['skills']}. 
+                Education: {profile['education']}.
+                Time available: {profile['time']} hours/week.
+                also add the links for the suggested courses and resources.
+                prefer the free and acc to its level courses and resources.
+                """
+
+                try:
+                    model = genai.GenerativeModel("gemini-pro")
+                    response = model.generate_content(prompt)
+
+                    roadmap = response.text.split("\n")  # split steps
+                    roadmap = [step for step in roadmap if step.strip()]
+
+                    # Save roadmap to history
+                    st.session_state.history.append({
+                        "goal": profile["goal"],
+                        "steps": roadmap
+                    })
+
+                    st.success("✅ AI Learning Path Generated!")
+                    st.markdown("### Your Roadmap:")
+                    for step in roadmap:
+                        st.write(f"- {step}")
+
+                except Exception as e:
+                    st.error(f"⚠️ Error generating recommendations: {e}")
 
 elif page == "History":
     st.title("📜 Your Past Learning Paths")
