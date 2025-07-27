@@ -80,7 +80,10 @@ elif page == "Profile Setup":
         skills = st.text_area("Current Skills (comma separated)")
         level = st.selectbox("Level", ["Beginner", "Intermediate", "Advanced"])
         goal = st.text_input("Career Goal (e.g., Web Developer, Data Scientist, AI Engineer)")
-        time = st.slider("Hours available per week:", 1, 40, 5)
+        hours_per_day = st.slider("Hours available per day:", 1, 8, 2)
+        days_per_week = st.slider("Days available per week:", 1, 7, 5)
+        time = hours_per_day * days_per_week
+        st.info(f"📊 Total hours per week: {time} hours")
 
     if st.button("Save Profile"):
         st.session_state.profile = {
@@ -109,21 +112,25 @@ elif page == "Get Recommendations":
                 
                 # Create a concise prompt for learning path generation
                 prompt = f"""
-                Create a simple 5-6 bullet point learning path for becoming a {profile['goal']}.
+                Create exactly 5-6 learning topics for becoming a {profile['goal']}.
                 
-                User Profile:
-                - Age: {profile['age']} years old
-                - Current Level: {profile['level']}
-                - Current Skills: {profile['skills']}
-                - Available Time: {profile['time']} hours per week
+                User: {profile['age']} years old, {profile['level']} level
+                Skills: {profile['skills']}
+                Time: {profile['time']} hours per week (MAXIMUM)
                 
-                Format: Just 5-6 bullet points with topic name and time estimate.
-                Example:
-                • HTML/CSS Basics (2 weeks)
-                • JavaScript Fundamentals (3 weeks)
-                • React Framework (4 weeks)
+                RESPONSE FORMAT (exactly like this):
+                • Topic Name (X weeks)
+                • Topic Name (X weeks)
+                • Topic Name (X weeks)
+                • Topic Name (X weeks)
+                • Topic Name (X weeks)
                 
-                Keep it short and practical. No long explanations.
+                Rules:
+                - Use bullet points (•) only
+                - Include time estimate in weeks
+                - Total time should not exceed 6 months
+                - No explanations or conversations
+                - Just topic names and time estimates
                 """
 
                 # Create containers for better organization
@@ -137,40 +144,37 @@ elif page == "Get Recommendations":
                     try:
                         model = genai.GenerativeModel("gemini-2.0-flash")
                         
-                        # Initialize variables
-                        streamed_text = ""
-                        chunk_count = 0
+                        # Show processing steps with spinners
+                        with st.spinner("🔍 Analyzing your profile..."):
+                            time.sleep(1)
+                            progress_bar.progress(0.2)
+                            status_text.text("🔍 Analyzing your profile...")
                         
-                        # Show initial status
-                        status_text.text("🔄 Connecting to AI...")
-                        progress_bar.progress(0.1)
+                        with st.spinner("🤖 Connecting to AI..."):
+                            time.sleep(1)
+                            progress_bar.progress(0.4)
+                            status_text.text("🤖 Connecting to AI...")
                         
-                        # Stream the response with better error handling
-                        try:
-                            response = model.generate_content(prompt, stream=True)
-                            
-                            # Process streaming response
-                            for chunk in response:
-                                chunk_count += 1
-                                
-                                if hasattr(chunk, 'text') and chunk.text:
-                                    streamed_text += chunk.text
-                                    
-                                    # Update progress (more realistic estimation)
-                                    progress = min(0.1 + (chunk_count * 0.8 / 100), 0.9)
-                                    progress_bar.progress(progress)
-                                    status_text.text(f"🔄 Generating... ({chunk_count} chunks)")
-                                    
-                                    # Show live preview (limit to last 500 chars to avoid UI lag)
-                                    preview = streamed_text[-500:] if len(streamed_text) > 500 else streamed_text
-                                    st.markdown(f"**Live Preview:**\n{preview}")
-                            
-                            # Complete progress
-                            progress_bar.progress(1.0)
-                            status_text.text("✅ Generation Complete!")
-                            
-                            # Clear the live preview
-                            st.empty()
+                        with st.spinner("📝 Generating learning path..."):
+                            time.sleep(1)
+                            progress_bar.progress(0.6)
+                            status_text.text("📝 Generating learning path...")
+                        
+                        # Get the response
+                        response = model.generate_content(prompt)
+                        
+                        with st.spinner("✨ Finalizing..."):
+                            time.sleep(0.5)
+                            progress_bar.progress(0.8)
+                            status_text.text("✨ Finalizing...")
+                        
+                        # Complete progress
+                        progress_bar.progress(1.0)
+                        status_text.text("✅ Generation Complete!")
+                        
+                        # Get the response text
+                        if response.text:
+                            streamed_text = response.text
                             
                             # Process and format the final result
                             roadmap_lines = [line.strip() for line in streamed_text.split("\n") if line.strip()]
@@ -208,42 +212,8 @@ elif page == "Get Recommendations":
                                     file_name=f"learning_path_{profile['goal'].replace(' ', '_')}.txt",
                                     mime="text/plain"
                                 )
-                        
-                        except Exception as stream_error:
-                            st.error(f"⚠️ Streaming error: {str(stream_error)}")
-                            st.info("Trying non-streaming approach...")
-                            
-                            # Fallback to non-streaming approach
-                            try:
-                                response = model.generate_content(prompt)
-                                if response.text:
-                                    streamed_text = response.text
-                                    
-                                    # Process and display result
-                                    roadmap_lines = [line.strip() for line in streamed_text.split("\n") if line.strip()]
-                                    
-                                    st.session_state.history.append({
-                                        "goal": profile["goal"],
-                                        "steps": roadmap_lines
-                                    })
-                                    
-                                    st.markdown("### 🎯 Your Personalized Learning Path")
-                                    st.markdown("---")
-                                    
-                                    for line in roadmap_lines:
-                                        if line.startswith(('1.', '2.', '3.', '4.', '5.', '6.', '7.', '8.', '9.')):
-                                            st.markdown(f"**{line}**")
-                                        elif line.startswith(('•', '-', '*', '→')):
-                                            st.markdown(f"  {line}")
-                                        else:
-                                            st.markdown(line)
-                                    
-                                    st.success("✅ Learning Path Generated Successfully!")
-                                else:
-                                    st.error("❌ No response received from AI")
-                            
-                            except Exception as fallback_error:
-                                st.error(f"⚠️ Fallback error: {str(fallback_error)}")
+                        else:
+                            st.error("❌ No response received from AI")
                     
                     except Exception as e:
                         st.error(f"⚠️ Error initializing AI model: {str(e)}")
