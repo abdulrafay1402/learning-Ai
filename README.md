@@ -6,6 +6,17 @@
 
 An intelligent web application that generates personalized learning paths using AI. Built with Streamlit and powered by Google's Gemini API, this app creates customized educational roadmaps based on your skills, goals, and available time.
 
+## Visit
+
+🚀 [https://learning-ai.streamlit.app](https://learning-ai.streamlit.app)
+
+
+## 📸 Preview
+
+![Home Page](home.png)
+
+--- 
+
 ## ✨ Features
 
 ### 🎯 **Personalized Learning Paths**
@@ -174,7 +185,7 @@ This project is for academic and institutional use. Credit the developers if reu
 ## 👨‍💻 Developer
 
 **Abdul Rafay**
-- **Email**: abdulrafayhere07@gmail.com
+- **Email**: abdulrafay14021997@gmail.com
 - **GitHub**: [@abdulrafay1402](https://github.com/abdulrafay1402)
 - **Education**: Software Engineering student at FAST-NUCES, Karachi, Pakistan
 
@@ -188,7 +199,7 @@ This project is for academic and institutional use. Credit the developers if reu
 
 If you encounter any issues or have questions:
 - Create an issue on GitHub
-- Email: abdulrafayhere07@gmail.com
+- Email: abdulrafay14021997@gmail.com
 - Check the documentation for common solutions
 
 ---
