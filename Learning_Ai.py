@@ -90,12 +90,7 @@ elif page == "Get Recommendations":
         if st.button("🚀 Generate Learning Path"):
             profile = st.session_state.profile
             prompt = f"""
-            Create a learning roadmap in bullet points (max 7-8 steps) for a {profile['level']} learner
-            who wants to become a {profile['goal']}. 
-            Current skills: {profile['skills']}.
-            Education: {profile['education']}.
-            Time available: {profile['time']} hours/week.
-            For each step, include a free course/resource link.
+           say hello to the user
             """
 
             output_placeholder = st.empty()
