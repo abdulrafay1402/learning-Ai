@@ -167,7 +167,7 @@ elif page == "Get Recommendations":
                 
                 REQUIREMENTS:
                 - Create exactly 5-6 learning topics
-                - Each topic must include a specific course link (Udemy, Coursera, freeCodeCamp, etc.)
+                - Each topic must include one specific course link (Udemy, Coursera, freeCodeCamp, etc.)
                 - Distribute the {profile['total_hours']:.1f} hours across all topics
                 - Respect the {profile['total_months']:.1f} month timeline
                 - Start from {profile['level']} level
