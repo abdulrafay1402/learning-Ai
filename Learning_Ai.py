@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 import os, google.generativeai as genai
 import time
 
+# Load environment variables
 load_dotenv()
 
 # Check if API key is available
@@ -10,9 +11,17 @@ api_key = os.getenv("GEMINI_API_KEY")
 if not api_key:
     st.error("❌ GEMINI_API_KEY not found in environment variables!")
     st.info("Please create a .env file with your GEMINI_API_KEY")
+    st.info(f"Current working directory: {os.getcwd()}")
+    st.info(f"Files in directory: {os.listdir('.')}")
     st.stop()
 
-genai.configure(api_key=api_key)
+# Configure the API
+try:
+    genai.configure(api_key=api_key)
+    st.success("✅ API Key loaded successfully!")
+except Exception as e:
+    st.error(f"❌ Error configuring API: {str(e)}")
+    st.stop()
 
 
 # Initialize session state
@@ -115,24 +124,21 @@ elif page == "Get Recommendations":
             if st.button("🚀 Generate Learning Path"):
                 profile = st.session_state.profile
                 
-                # Create a comprehensive prompt for learning path generation
+                # Create a concise prompt for learning path generation
                 prompt = f"""
-                Create a detailed learning path for a {profile['age']}-year-old {profile['gender']} with {profile['education']} education.
+                Create a simple 5-6 bullet point learning path for {profile['goal']}.
                 
-                Current Skills: {profile['skills']}
-                Current Level: {profile['level']}
-                Career Goal: {profile['goal']}
-                Available Time: {profile['time']} hours per week
+                User: {profile['age']} years old, {profile['level']} level
+                Skills: {profile['skills']}
+                Time: {profile['time']} hours per week
                 
-                Please provide a structured learning roadmap with:
-                1. Foundation skills to learn first
-                2. Intermediate concepts and tools
-                3. Advanced topics and projects
-                4. Recommended resources (courses, books, platforms)
-                5. Timeline estimates for each phase
+                Format: Just 5-6 bullet points with topic name and time estimate.
+                Example:
+                • HTML/CSS Basics (2 weeks)
+                • JavaScript Fundamentals (3 weeks)
+                • React Framework (4 weeks)
                 
-                Format the response as a clear, numbered list with bullet points for sub-items.
-                Make it practical and achievable for someone with {profile['time']} hours per week.
+                Keep it short and practical. No long explanations.
                 """
 
                 # Create containers for better organization
