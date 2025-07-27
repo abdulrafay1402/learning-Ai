@@ -30,11 +30,11 @@ if "history" not in st.session_state:
     st.session_state.history = []   # stores all generated paths
 if "theme_preferences" not in st.session_state:
     st.session_state.theme_preferences = {
-        "mode": "Light",
+        "mode": "Dark",
         "primary_color": "#FF6B6B",
         "secondary_color": "#4ECDC4",
-        "background_color": "#FFFFFF",
-        "text_color": "#2C3E50"
+        "background_color": "#1E1E1E",
+        "text_color": "#FFFFFF"
     }
 if "page" not in st.session_state:
     st.session_state.page = "Home"  # stores current page
@@ -142,11 +142,11 @@ with st.sidebar.expander("🎨 Theme Settings", expanded=False):
         # Reset button
         if st.button("🔄 Reset to Default", help="Reset all theme settings to default", key="reset_btn"):
             st.session_state.theme_preferences = {
-                "mode": "Light",
+                "mode": "Dark",
                 "primary_color": "#FF6B6B",
                 "secondary_color": "#4ECDC4",
-                "background_color": "#FFFFFF",
-                "text_color": "#2C3E50"
+                "background_color": "#1E1E1E",
+                "text_color": "#FFFFFF"
             }
             st.rerun()
 
@@ -591,7 +591,7 @@ elif page == "About":
         <div style='font-size:17px;'>
         <b>AI Learning Path Recommender</b><br>
         <b>Version:</b> 1.0.0<br>
-        <b>Built with:</b> Streamlit, Firebase, and Gemini API<br><br>
+        <b>Built with:</b> Streamlit, and Gemini API<br><br>
         This application helps users discover <b>personalized learning paths</b> based on their unique skills, interests, and career aspirations. Whether you're a student, beginner, or professional, get tailored recommendations for courses, tools, and platforms to accelerate your learning journey!
         </div>
         <hr>
