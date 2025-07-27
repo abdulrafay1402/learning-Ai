@@ -58,6 +58,9 @@ page = st.sidebar.selectbox(
 if page != st.session_state.page:
     st.session_state.page = page
     st.rerun()
+
+# Use session state page for navigation
+page = st.session_state.page
 st.sidebar.markdown("---")
 
 # Theme Configuration - Collapsible
@@ -70,8 +73,29 @@ with st.sidebar.expander("🎨 Theme Settings", expanded=False):
         help="Choose your preferred theme mode"
     )
 
-    # Update session state
+    # Update session state and auto-adjust colors based on theme mode
+    old_mode = st.session_state.theme_preferences["mode"]
     st.session_state.theme_preferences["mode"] = theme_mode
+    
+    # Auto-adjust colors when switching between light and dark modes
+    if old_mode != theme_mode:
+        if theme_mode == "Light":
+            # Set light theme default colors
+            st.session_state.theme_preferences.update({
+                "primary_color": "#FF6B6B",
+                "secondary_color": "#4ECDC4",
+                "background_color": "#FFFFFF",
+                "text_color": "#2C3E50"
+            })
+        elif theme_mode == "Dark":
+            # Set dark theme default colors
+            st.session_state.theme_preferences.update({
+                "primary_color": "#FF6B6B",
+                "secondary_color": "#4ECDC4",
+                "background_color": "#1E1E1E",
+                "text_color": "#FFFFFF"
+            })
+        st.rerun()
 
     # Preset themes
     st.markdown("**🎨 Quick Themes:**")
@@ -421,6 +445,9 @@ elif page == "Profile Setup":
         }
         st.success("Profile Saved Successfully ✅")
         
+        # Add balloons celebration
+        st.balloons()
+        
         # Add button to go directly to Get Recommendations
         st.markdown("---")
         col1, col2, col3 = st.columns([1, 2, 1])
@@ -428,6 +455,9 @@ elif page == "Profile Setup":
             if st.button("🚀 Get Your Learning Path", key="go_to_recommendations", use_container_width=True):
                 st.session_state.page = "Get Recommendations"
                 st.rerun()
+        
+        # Show a message to guide users
+        st.info("💡 Click the button above to generate your personalized learning path!")
 
 
 elif page == "Get Recommendations":
