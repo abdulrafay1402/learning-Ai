@@ -38,6 +38,10 @@ if "theme_preferences" not in st.session_state:
     }
 if "page" not in st.session_state:
     st.session_state.page = "Home"  # stores current page
+if "show_redirect" not in st.session_state:
+    st.session_state.show_redirect = False  # controls redirect button visibility
+if "show_success" not in st.session_state:
+    st.session_state.show_success = False  # controls success message visibility
 
 # Set page configuration
 st.set_page_config(
@@ -373,28 +377,29 @@ if page == "Home":
 elif page == "Profile Setup":
     st.title("📝 Profile Setup")
     st.write("Tell us about yourself so we can create the best learning path for you.")
+    st.info("💡 Fields marked with * are required")
 
     # Personal Information
     st.subheader("👤 Personal Information")
     col1, col2 = st.columns(2)
     with col1:
-        name = st.text_input("Full Name")
-        age = st.number_input("Age", 15, 80, 25)
-        gender = st.selectbox("Gender", ["Male", "Female", "Other", "Prefer not to say"])
+        name = st.text_input("Full Name *", placeholder="Enter your full name")
+        age = st.number_input("Age *", 15, 80, 25)
+        gender = st.selectbox("Gender *", ["Male", "Female", "Other", "Prefer not to say"])
         
     with col2:
-        education = st.selectbox("Education Level", [
+        education = st.selectbox("Education Level *", [
             "High School", "Some College", "Associate's Degree", 
             "Bachelor's Degree", "Master's Degree", "PhD", "Other"
         ])
-        experience = st.selectbox("Work Experience", [
+        experience = st.selectbox("Work Experience *", [
             "No Experience", "1-2 years", "3-5 years", 
             "6-10 years", "10+ years"
         ])
 
     # Learning Goals
     st.subheader("🎯 Learning Goals")
-    goal = st.text_input("What career/job do you want to pursue?", 
+    goal = st.text_input("What career/job do you want to pursue? *", 
                         placeholder="e.g., Full Stack Developer, Data Scientist, AI Engineer")
     
     # Current Skills Assessment
@@ -427,37 +432,67 @@ elif page == "Profile Setup":
     - **Total Available:** {total_hours:.1f} hours ({total_months:.1f} months)
     """)
 
+    # Validation
+    required_fields = {
+        "Full Name": name,
+        "Career Goal": goal
+    }
+    
+    missing_fields = [field for field, value in required_fields.items() if not value or value.strip() == ""]
+    
     if st.button("Save Profile"):
-        st.session_state.profile = {
-            "name": name,
-            "age": age,
-            "gender": gender,
-            "education": education,
-            "experience": experience,
-            "skills": skills,
-            "level": level,
-            "goal": goal,
-            "hours_per_day": hours_per_day,
-            "days_per_week": days_per_week,
-            "weeks_available": weeks_available,
-            "total_hours": total_hours,
-            "total_months": total_months
-        }
-        st.success("Profile Saved Successfully ✅")
-        
-        # Add balloons celebration
-        st.balloons()
-        
-        # Add button to go directly to Get Recommendations
-        st.markdown("---")
-        col1, col2, col3 = st.columns([1, 2, 1])
-        with col2:
-            if st.button("🚀 Get Your Learning Path", key="go_to_recommendations", use_container_width=True):
-                st.session_state.page = "Get Recommendations"
-                st.rerun()
-        
-        # Show a message to guide users
-        st.info("💡 Click the button above to generate your personalized learning path!")
+        if missing_fields:
+            st.error(f"❌ Please fill in the required fields: {', '.join(missing_fields)}")
+        else:
+            st.session_state.profile = {
+                "name": name,
+                "age": age,
+                "gender": gender,
+                "education": education,
+                "experience": experience,
+                "skills": skills,
+                "level": level,
+                "goal": goal,
+                "hours_per_day": hours_per_day,
+                "days_per_week": days_per_week,
+                "weeks_available": weeks_available,
+                "total_hours": total_hours,
+                "total_months": total_months
+            }
+            # Set flags for success display
+            st.session_state.show_redirect = True
+            st.session_state.show_success = True
+            st.rerun()
+
+# Show success message and celebrations if profile was just saved
+if st.session_state.get("show_success", False):
+    st.success("Profile Saved Successfully ✅")
+    
+    # Add balloons celebration
+    st.balloons()
+    
+    # Add confetti effect
+    st.markdown("""
+    <div style="text-align: center; font-size: 24px; margin: 20px 0;">
+    🎉 🎊 🎈 🎉 🎊 🎈
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Clear the success flag after showing
+    st.session_state.show_success = False
+
+# Show redirect button if profile was just saved
+if st.session_state.get("show_redirect", False):
+    st.markdown("---")
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        if st.button("🚀 Get Your Learning Path", key="go_to_recommendations", use_container_width=True):
+            st.session_state.page = "Get Recommendations"
+            st.session_state.show_redirect = False  # Clear the flag
+            st.rerun()
+    
+    # Show a message to guide users
+    st.info("💡 Click the button above to generate your personalized learning path!")
 
 
 elif page == "Get Recommendations":
@@ -501,10 +536,12 @@ elif page == "Get Recommendations":
                 Rules:
                 - Use bullet points (•) only
                 - Include time estimate in weeks
-                - Include actual course URLs from popular platforms
+                - Include ONLY ONE course URL per topic (no duplicates)
+                - Use actual course URLs from popular platforms (Udemy, Coursera, freeCodeCamp, etc.)
                 - Total weeks should not exceed {profile['total_months']:.0f} months
                 - No explanations or conversations
                 - Just topic names, time estimates, and course links
+                - Do NOT repeat URLs or add multiple links per topic
                 """
 
                 # Create containers for better organization
