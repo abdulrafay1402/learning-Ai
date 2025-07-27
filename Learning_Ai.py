@@ -36,6 +36,8 @@ if "theme_preferences" not in st.session_state:
         "background_color": "#FFFFFF",
         "text_color": "#2C3E50"
     }
+if "page" not in st.session_state:
+    st.session_state.page = "Home"  # stores current page
 
 # Set page configuration
 st.set_page_config(
@@ -48,8 +50,14 @@ st.set_page_config(
 st.sidebar.title("Learning - AI")
 page = st.sidebar.selectbox(
     "Go to:",
-    ["Home", "Profile Setup", "Get Recommendations", "History", "Settings", "About"]
+    ["Home", "Profile Setup", "Get Recommendations", "History", "Settings", "About"],
+    index=["Home", "Profile Setup", "Get Recommendations", "History", "Settings", "About"].index(st.session_state.page)
 )
+
+# Update session state when page changes
+if page != st.session_state.page:
+    st.session_state.page = page
+    st.rerun()
 st.sidebar.markdown("---")
 
 # Theme Configuration - Collapsible
@@ -331,7 +339,12 @@ if page == "Home":
         based on your skills, interests, and career goals.
         """
     )
-    st.button("Get Started")
+    
+    # Get Started button that redirects to Profile Setup
+    if st.button("Get Started", key="get_started_btn"):
+        # Change the page to Profile Setup
+        st.session_state.page = "Profile Setup"
+        st.rerun()
 
 elif page == "Profile Setup":
     st.title("📝 Profile Setup")
