@@ -98,24 +98,22 @@ elif page == "Get Recommendations":
             For each step, include a free course/resource link.
             """
 
-            # Placeholder for streaming output
             output_placeholder = st.empty()
             streamed_text = ""
 
             try:
                 model = genai.GenerativeModel("gemini-2.0-flash")
 
-                with st.spinner("✨ Generating..."):
-                    # Streaming response
-                    for chunk in model.generate_content(prompt, stream=True):
-                        if chunk.text:
-                            streamed_text += chunk.text
-                            output_placeholder.markdown(f"### Your Roadmap:\n{streamed_text}")
+                # STREAMING (no spinner, flush updates immediately)
+                for chunk in model.generate_content(prompt, stream=True):
+                    if chunk.text:
+                        streamed_text += chunk.text
+                        # update live (flush=True not required in Streamlit)
+                        output_placeholder.markdown(f"### Your Roadmap:\n{streamed_text}")
 
-                # Split into steps
+                # Final split and save
                 roadmap = [line.strip() for line in streamed_text.split("\n") if line.strip()]
 
-                # Save to history
                 st.session_state.history.append({
                     "goal": profile["goal"],
                     "steps": roadmap
