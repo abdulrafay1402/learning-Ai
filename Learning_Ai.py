@@ -114,150 +114,150 @@ elif page == "Get Recommendations":
         with col2:
             if st.button("🚀 Generate Learning Path"):
                 profile = st.session_state.profile
-            
-            # Create a comprehensive prompt for learning path generation
-            prompt = f"""
-            Create a detailed learning path for a {profile['age']}-year-old {profile['gender']} with {profile['education']} education.
-            
-            Current Skills: {profile['skills']}
-            Current Level: {profile['level']}
-            Career Goal: {profile['goal']}
-            Available Time: {profile['time']} hours per week
-            
-            Please provide a structured learning roadmap with:
-            1. Foundation skills to learn first
-            2. Intermediate concepts and tools
-            3. Advanced topics and projects
-            4. Recommended resources (courses, books, platforms)
-            5. Timeline estimates for each phase
-            
-            Format the response as a clear, numbered list with bullet points for sub-items.
-            Make it practical and achievable for someone with {profile['time']} hours per week.
-            """
+                
+                # Create a comprehensive prompt for learning path generation
+                prompt = f"""
+                Create a detailed learning path for a {profile['age']}-year-old {profile['gender']} with {profile['education']} education.
+                
+                Current Skills: {profile['skills']}
+                Current Level: {profile['level']}
+                Career Goal: {profile['goal']}
+                Available Time: {profile['time']} hours per week
+                
+                Please provide a structured learning roadmap with:
+                1. Foundation skills to learn first
+                2. Intermediate concepts and tools
+                3. Advanced topics and projects
+                4. Recommended resources (courses, books, platforms)
+                5. Timeline estimates for each phase
+                
+                Format the response as a clear, numbered list with bullet points for sub-items.
+                Make it practical and achievable for someone with {profile['time']} hours per week.
+                """
 
-            # Create containers for better organization
-            with st.container():
-                st.markdown("### 🎯 Generating Your Personalized Learning Path...")
-                
-                # Progress indicator
-                progress_bar = st.progress(0)
-                status_text = st.empty()
-                
-                try:
-                    model = genai.GenerativeModel("gemini-2.0-flash")
+                # Create containers for better organization
+                with st.container():
+                    st.markdown("### 🎯 Generating Your Personalized Learning Path...")
                     
-                    # Initialize variables
-                    streamed_text = ""
-                    chunk_count = 0
+                    # Progress indicator
+                    progress_bar = st.progress(0)
+                    status_text = st.empty()
                     
-                    # Show initial status
-                    status_text.text("🔄 Connecting to AI...")
-                    progress_bar.progress(0.1)
-                    
-                    # Stream the response with better error handling
                     try:
-                        response = model.generate_content(prompt, stream=True)
+                        model = genai.GenerativeModel("gemini-2.0-flash")
                         
-                        # Process streaming response
-                        for chunk in response:
-                            chunk_count += 1
-                            
-                            if hasattr(chunk, 'text') and chunk.text:
-                                streamed_text += chunk.text
-                                
-                                # Update progress (more realistic estimation)
-                                progress = min(0.1 + (chunk_count * 0.8 / 100), 0.9)
-                                progress_bar.progress(progress)
-                                status_text.text(f"🔄 Generating... ({chunk_count} chunks)")
-                                
-                                # Show live preview (limit to last 500 chars to avoid UI lag)
-                                preview = streamed_text[-500:] if len(streamed_text) > 500 else streamed_text
-                                st.markdown(f"**Live Preview:**\n{preview}")
+                        # Initialize variables
+                        streamed_text = ""
+                        chunk_count = 0
                         
-                        # Complete progress
-                        progress_bar.progress(1.0)
-                        status_text.text("✅ Generation Complete!")
+                        # Show initial status
+                        status_text.text("🔄 Connecting to AI...")
+                        progress_bar.progress(0.1)
                         
-                        # Clear the live preview
-                        st.empty()
-                        
-                        # Process and format the final result
-                        roadmap_lines = [line.strip() for line in streamed_text.split("\n") if line.strip()]
-                        
-                        # Save to history
-                        st.session_state.history.append({
-                            "goal": profile["goal"],
-                            "steps": roadmap_lines
-                        })
-                        
-                        # Display final formatted result
-                        st.markdown("### 🎯 Your Personalized Learning Path")
-                        st.markdown("---")
-                        
-                        for line in roadmap_lines:
-                            if line.startswith(('1.', '2.', '3.', '4.', '5.', '6.', '7.', '8.', '9.')):
-                                st.markdown(f"**{line}**")
-                            elif line.startswith(('•', '-', '*', '→')):
-                                st.markdown(f"  {line}")
-                            else:
-                                st.markdown(line)
-                        
-                        st.success("✅ Learning Path Generated Successfully!")
-                        
-                        # Add download option
-                        if st.button("📥 Download Learning Path"):
-                            # Create downloadable text
-                            download_text = f"Learning Path for {profile['goal']}\n"
-                            download_text += "=" * 50 + "\n\n"
-                            download_text += streamed_text
-                            
-                            st.download_button(
-                                label="📄 Download as Text File",
-                                data=download_text,
-                                file_name=f"learning_path_{profile['goal'].replace(' ', '_')}.txt",
-                                mime="text/plain"
-                            )
-                    
-                    except Exception as stream_error:
-                        st.error(f"⚠️ Streaming error: {str(stream_error)}")
-                        st.info("Trying non-streaming approach...")
-                        
-                        # Fallback to non-streaming approach
+                        # Stream the response with better error handling
                         try:
-                            response = model.generate_content(prompt)
-                            if response.text:
-                                streamed_text = response.text
+                            response = model.generate_content(prompt, stream=True)
+                            
+                            # Process streaming response
+                            for chunk in response:
+                                chunk_count += 1
                                 
-                                # Process and display result
-                                roadmap_lines = [line.strip() for line in streamed_text.split("\n") if line.strip()]
+                                if hasattr(chunk, 'text') and chunk.text:
+                                    streamed_text += chunk.text
+                                    
+                                    # Update progress (more realistic estimation)
+                                    progress = min(0.1 + (chunk_count * 0.8 / 100), 0.9)
+                                    progress_bar.progress(progress)
+                                    status_text.text(f"🔄 Generating... ({chunk_count} chunks)")
+                                    
+                                    # Show live preview (limit to last 500 chars to avoid UI lag)
+                                    preview = streamed_text[-500:] if len(streamed_text) > 500 else streamed_text
+                                    st.markdown(f"**Live Preview:**\n{preview}")
+                            
+                            # Complete progress
+                            progress_bar.progress(1.0)
+                            status_text.text("✅ Generation Complete!")
+                            
+                            # Clear the live preview
+                            st.empty()
+                            
+                            # Process and format the final result
+                            roadmap_lines = [line.strip() for line in streamed_text.split("\n") if line.strip()]
+                            
+                            # Save to history
+                            st.session_state.history.append({
+                                "goal": profile["goal"],
+                                "steps": roadmap_lines
+                            })
+                            
+                            # Display final formatted result
+                            st.markdown("### 🎯 Your Personalized Learning Path")
+                            st.markdown("---")
+                            
+                            for line in roadmap_lines:
+                                if line.startswith(('1.', '2.', '3.', '4.', '5.', '6.', '7.', '8.', '9.')):
+                                    st.markdown(f"**{line}**")
+                                elif line.startswith(('•', '-', '*', '→')):
+                                    st.markdown(f"  {line}")
+                                else:
+                                    st.markdown(line)
+                            
+                            st.success("✅ Learning Path Generated Successfully!")
+                            
+                            # Add download option
+                            if st.button("📥 Download Learning Path"):
+                                # Create downloadable text
+                                download_text = f"Learning Path for {profile['goal']}\n"
+                                download_text += "=" * 50 + "\n\n"
+                                download_text += streamed_text
                                 
-                                st.session_state.history.append({
-                                    "goal": profile["goal"],
-                                    "steps": roadmap_lines
-                                })
-                                
-                                st.markdown("### 🎯 Your Personalized Learning Path")
-                                st.markdown("---")
-                                
-                                for line in roadmap_lines:
-                                    if line.startswith(('1.', '2.', '3.', '4.', '5.', '6.', '7.', '8.', '9.')):
-                                        st.markdown(f"**{line}**")
-                                    elif line.startswith(('•', '-', '*', '→')):
-                                        st.markdown(f"  {line}")
-                                    else:
-                                        st.markdown(line)
-                                
-                                st.success("✅ Learning Path Generated Successfully!")
-                            else:
-                                st.error("❌ No response received from AI")
+                                st.download_button(
+                                    label="📄 Download as Text File",
+                                    data=download_text,
+                                    file_name=f"learning_path_{profile['goal'].replace(' ', '_')}.txt",
+                                    mime="text/plain"
+                                )
                         
-                        except Exception as fallback_error:
-                            st.error(f"⚠️ Fallback error: {str(fallback_error)}")
-                
-                except Exception as e:
-                    st.error(f"⚠️ Error initializing AI model: {str(e)}")
-                    st.info("Please check your API key and internet connection.")
-                    st.code(f"Error details: {type(e).__name__}: {str(e)}")
+                        except Exception as stream_error:
+                            st.error(f"⚠️ Streaming error: {str(stream_error)}")
+                            st.info("Trying non-streaming approach...")
+                            
+                            # Fallback to non-streaming approach
+                            try:
+                                response = model.generate_content(prompt)
+                                if response.text:
+                                    streamed_text = response.text
+                                    
+                                    # Process and display result
+                                    roadmap_lines = [line.strip() for line in streamed_text.split("\n") if line.strip()]
+                                    
+                                    st.session_state.history.append({
+                                        "goal": profile["goal"],
+                                        "steps": roadmap_lines
+                                    })
+                                    
+                                    st.markdown("### 🎯 Your Personalized Learning Path")
+                                    st.markdown("---")
+                                    
+                                    for line in roadmap_lines:
+                                        if line.startswith(('1.', '2.', '3.', '4.', '5.', '6.', '7.', '8.', '9.')):
+                                            st.markdown(f"**{line}**")
+                                        elif line.startswith(('•', '-', '*', '→')):
+                                            st.markdown(f"  {line}")
+                                        else:
+                                            st.markdown(line)
+                                    
+                                    st.success("✅ Learning Path Generated Successfully!")
+                                else:
+                                    st.error("❌ No response received from AI")
+                            
+                            except Exception as fallback_error:
+                                st.error(f"⚠️ Fallback error: {str(fallback_error)}")
+                    
+                    except Exception as e:
+                        st.error(f"⚠️ Error initializing AI model: {str(e)}")
+                        st.info("Please check your API key and internet connection.")
+                        st.code(f"Error details: {type(e).__name__}: {str(e)}")
 
 elif page == "History":
     st.title("📜 Your Past Learning Paths")
