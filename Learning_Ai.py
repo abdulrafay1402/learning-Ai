@@ -1,9 +1,8 @@
 import streamlit as st
-
 # Set page configuration
 st.set_page_config(
     page_title="Learning - AI",
-    page_icon="logo.jpg",
+    page_icon="Logo.jpg",
     layout="wide"
 )
 
@@ -24,7 +23,7 @@ st.sidebar.info("Made with ❤️ using Streamlit")
 if page == "Home":
     col1, col2, col3 = st.columns([1, 3, 1])
     with col2:
-        st.image("logo.jpg", use_container_width=True)
+        st.image("Logo.jpg", use_container_width=True)
     st.title("Learning - AI")
     st.header("AI based Learning Path Recommender")
     st.subheader("Welcome! Start your learning journey.")
