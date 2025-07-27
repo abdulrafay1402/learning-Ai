@@ -88,39 +88,43 @@ elif page == "Get Recommendations":
         st.write(f"Hello **{st.session_state.profile['name']}**, ready for your learning path?")
 
         if st.button("🚀 Generate Learning Path"):
-            with st.spinner("Generating your personalized roadmap..."):
-                # Build prompt from user profile
-                profile = st.session_state.profile
-                prompt = f"""
-                Create a detailed step-by-step learning roadmap for a {profile['level']} level learner
-                who wants to become a {profile['goal']}. 
-                Current skills: {profile['skills']}. 
-                Education: {profile['education']}.
-                Time available: {profile['time']} hours/week.
-                also add the links for the suggested courses and resources.
-                prefer the free and acc to its level courses and resources.
-                """
+            profile = st.session_state.profile
+            prompt = f"""
+            Create a learning roadmap in bullet points (max 7-8 steps) for a {profile['level']} learner
+            who wants to become a {profile['goal']}. 
+            Current skills: {profile['skills']}.
+            Education: {profile['education']}.
+            Time available: {profile['time']} hours/week.
+            For each step, include a free course/resource link.
+            """
 
-                try:
-                    model = genai.GenerativeModel("gemini-2.0-flash")
-                    response = model.generate_content(prompt)
+            # Placeholder for streaming output
+            output_placeholder = st.empty()
+            streamed_text = ""
 
-                    roadmap = response.text.split("\n")  # split steps
-                    roadmap = [step for step in roadmap if step.strip()]
+            try:
+                model = genai.GenerativeModel("gemini-2.0-flash")
 
-                    # Save roadmap to history
-                    st.session_state.history.append({
-                        "goal": profile["goal"],
-                        "steps": roadmap
-                    })
+                with st.spinner("✨ Generating..."):
+                    # Streaming response
+                    for chunk in model.generate_content(prompt, stream=True):
+                        if chunk.text:
+                            streamed_text += chunk.text
+                            output_placeholder.markdown(f"### Your Roadmap:\n{streamed_text}")
 
-                    st.success("✅ AI Learning Path Generated!")
-                    st.markdown("### Your Roadmap:")
-                    for step in roadmap:
-                        st.write(f"- {step}")
+                # Split into steps
+                roadmap = [line.strip() for line in streamed_text.split("\n") if line.strip()]
 
-                except Exception as e:
-                    st.error(f"⚠️ Error generating recommendations: {e}")
+                # Save to history
+                st.session_state.history.append({
+                    "goal": profile["goal"],
+                    "steps": roadmap
+                })
+
+                st.success("✅ Learning Path Completed!")
+
+            except Exception as e:
+                st.error(f"⚠️ Error generating recommendations: {e}")
 
 elif page == "History":
     st.title("📜 Your Past Learning Paths")
