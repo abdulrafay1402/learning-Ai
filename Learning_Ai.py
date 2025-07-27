@@ -1,4 +1,11 @@
 import streamlit as st
+
+# Initialize session state
+if "profile" not in st.session_state:
+    st.session_state.profile = {}   # stores user info
+if "history" not in st.session_state:
+    st.session_state.history = []   # stores all generated paths
+
 # Set page configuration
 st.set_page_config(
     page_title="Learning - AI",
@@ -38,7 +45,7 @@ if page == "Home":
 elif page == "Profile Setup":
     st.title("📝 Profile Setup")
     st.write("Tell us about yourself so we can create the best path for you.")
-    
+
     col1, col2 = st.columns(2)
     with col1:
         name = st.text_input("Name")
@@ -51,31 +58,60 @@ elif page == "Profile Setup":
         level = st.selectbox("Level", ["Beginner", "Intermediate", "Advanced"])
         goal = st.selectbox("Career Goal", ["Web Developer", "Data Scientist", "AI Engineer", "Mobile Developer", "Other"])
         time = st.slider("Hours available per week:", 1, 40, 5)
-    
+
     if st.button("Save Profile"):
+        st.session_state.profile = {
+            "name": name,
+            "age": age,
+            "gender": gender,
+            "education": education,
+            "skills": skills,
+            "level": level,
+            "goal": goal,
+            "time": time
+        }
         st.success("Profile Saved Successfully ✅")
+
 
 elif page == "Get Recommendations":
     st.title("🤖 AI-Powered Recommendations")
-    st.write("Click below to generate your **personalized learning path**:")
-    
-    if st.button("🚀 Generate Learning Path"):
-        with st.spinner("Generating..."):
-            # Placeholder for AI logic
-            st.success("Learning path generated successfully!")
+
+    if not st.session_state.profile:
+        st.warning("⚠️ Please set up your profile first!")
+    else:
+        st.write(f"Hello **{st.session_state.profile['name']}**, ready for your learning path?")
+        
+        if st.button("🚀 Generate Learning Path"):
+            # Later this will be AI generated. For now, dummy path:
+            roadmap = [
+                "Learn Python Basics",
+                "Master Pandas & Numpy",
+                "Build 3 Mini Projects",
+                "Learn SQL & Databases",
+                "Apply for internships"
+            ]
+            # Save this roadmap into history
+            st.session_state.history.append({
+                "goal": st.session_state.profile["goal"],
+                "steps": roadmap
+            })
+
+            st.success("Learning path generated successfully! ✅")
             st.markdown("### Your Roadmap:")
-            st.write("1. Learn Python Basics\n2. Master Pandas & Numpy\n3. Build 3 Mini Projects\n4. Learn SQL & Databases\n5. Apply for internships")
+            for i, step in enumerate(roadmap, 1):
+                st.write(f"{i}. {step}")
 
 elif page == "History":
     st.title("📜 Your Past Learning Paths")
-    st.info("Here are your saved learning paths:")
-    st.table(
-        {
-            "Date": ["2025-07-20", "2025-07-25"],
-            "Goal": ["Web Developer", "Data Scientist"],
-            "Status": ["In Progress", "Completed"],
-        }
-    )
+
+    if not st.session_state.history:
+        st.info("No learning paths yet! Go to 'Get Recommendations' to generate one.")
+    else:
+        for idx, item in enumerate(st.session_state.history, 1):
+            st.markdown(f"### {idx}. Goal: **{item['goal']}**")
+            for step in item["steps"]:
+                st.write(f"- {step}")
+            st.markdown("---")
 
 elif page == "Settings":
     st.title("⚙️ Settings")
