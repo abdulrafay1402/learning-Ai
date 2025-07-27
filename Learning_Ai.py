@@ -420,6 +420,14 @@ elif page == "Profile Setup":
             "total_months": total_months
         }
         st.success("Profile Saved Successfully ✅")
+        
+        # Add button to go directly to Get Recommendations
+        st.markdown("---")
+        col1, col2, col3 = st.columns([1, 2, 1])
+        with col2:
+            if st.button("🚀 Get Your Learning Path", key="go_to_recommendations", use_container_width=True):
+                st.session_state.page = "Get Recommendations"
+                st.rerun()
 
 
 elif page == "Get Recommendations":
