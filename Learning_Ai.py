@@ -520,8 +520,8 @@ elif page == "Get Recommendations":
                 - Daily: {profile['hours_per_day']} hours, Weekly: {profile['days_per_week']} days
                 
                 REQUIREMENTS:
-                - Create exactly 5-6 learning topics
-                - Each topic must include one specific course link (Udemy, Coursera, freeCodeCamp, etc.)
+                - Create 3-6 learning topics (not necessarily 5, adjust based on complexity)
+                - Each topic must include ONE genuine, real course link
                 - Distribute the {profile['total_hours']:.1f} hours across all topics
                 - Respect the {profile['total_months']:.1f} month timeline
                 - Start from {profile['level']} level
@@ -530,18 +530,25 @@ elif page == "Get Recommendations":
                 • Topic Name (X weeks) - [Course Link]
                 • Topic Name (X weeks) - [Course Link]
                 • Topic Name (X weeks) - [Course Link]
-                • Topic Name (X weeks) - [Course Link]
-                • Topic Name (X weeks) - [Course Link]
+                
+                CRITICAL RULES FOR LINKS:
+                - ONLY provide REAL, EXISTING course URLs
+                - Acceptable platforms: YouTube, Udemy, Coursera, freeCodeCamp, edX, Khan Academy, MIT OpenCourseWare, Harvard CS50, Stanford Online, Codecademy, The Odin Project, MDN Web Docs, W3Schools, Real Python, etc.
+                - If you don't know a specific course URL, use a general platform URL (e.g., "https://www.youtube.com/results?search_query=python+tutorial" or "https://www.udemy.com/topic/python/")
+                - NEVER create fake domains or non-existent URLs
+                - NEVER use placeholder URLs like "example.com" or "course-link-here"
+                - If unsure about a specific course, use a search URL from a reputable platform
+                - YouTube search URLs are acceptable when specific course links aren't available
                 
                 Rules:
                 - Use bullet points (•) only
                 - Include time estimate in weeks
                 - Include ONLY ONE course URL per topic (no duplicates)
-                - Use actual course URLs from popular platforms (Udemy, Coursera, freeCodeCamp, etc.)
                 - Total weeks should not exceed {profile['total_months']:.0f} months
                 - No explanations or conversations
                 - Just topic names, time estimates, and course links
                 - Do NOT repeat URLs or add multiple links per topic
+                - Quality over quantity - fewer genuine links are better than many fake ones
                 """
 
                 # Create containers for better organization
