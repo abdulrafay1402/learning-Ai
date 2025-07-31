@@ -608,25 +608,31 @@ elif page == "Get Recommendations":
                             st.markdown("---")
                             
                             for line in roadmap_lines:
-                                if line.startswith(('1.', '2.', '3.', '4.', '5.', '6.', '7.', '8.', '9.')):
-                                    st.markdown(f"**{line}**")
-                                elif line.startswith(('•', '-', '*', '→')):
-                                    # Check if line contains a URL
-                                    if 'http' in line:
-                                        # Split the line into topic and link
-                                        parts = line.split(' - ')
-                                        if len(parts) >= 2:
-                                            topic = parts[0].replace('•', '').strip()
-                                            link = parts[1].strip()
-                                            st.markdown(f"  **{topic}** - [{link}]({link})")
-                                        else:
-                                            st.markdown(f"  {line}")
-                                    else:
-                                        st.markdown(f"  {line}")
-                                else:
-                                    st.markdown(line)
+                                 if line.startswith(('1.', '2.', '3.', '4.', '5.', '6.', '7.', '8.', '9.')):
+                                     st.markdown(f"**{line}**")
+                                 elif line.startswith(('•', '-', '*', '→')):
+                                     # Check if line contains a URL
+                                     if 'http' in line:
+                                         # Split the line into topic and link
+                                         parts = line.split(' - ')
+                                         if len(parts) >= 2:
+                                             topic = parts[0].replace('•', '').strip()
+                                             link = parts[1].strip()
+                                             # Clean the link - remove any brackets or extra formatting
+                                             link = link.replace('[', '').replace(']', '').strip()
+                                             # Use HTML to force external link opening with proper URL
+                                             st.markdown(f'  **{topic}** - <a href="{link}" target="_blank" rel="noopener noreferrer">{link}</a>', unsafe_allow_html=True)
+                                         else:
+                                             st.markdown(f"  {line}")
+                                     else:
+                                         st.markdown(f"  {line}")
+                                 else:
+                                     st.markdown(line)
                             
                             st.success("✅ Learning Path Generated Successfully!")
+                            
+                            # Add disclaimer message
+                            st.warning("⚠️ **Disclaimer:** The learning paths and course links provided are AI-generated recommendations. While we strive for accuracy, please verify course availability, pricing, and content before enrolling. Course links may change over time, and some courses might not be available in your region.")
                             
                             # Add download option
                             if st.button("📥 Download Learning Path"):
